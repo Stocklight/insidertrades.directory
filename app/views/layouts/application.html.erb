@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Insidertrades Directory" %></title>
+    <title><%= content_for(:title) || "InsiderTrades.directory - Technical Construction" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="<%= content_for(:meta_description) || 'Technical insights into building modern Rails applications with the latest tools and frameworks.' %>">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
+
+    <%# Bootstrap 5 CSS %>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
@@ -23,6 +27,47 @@
   </head>
 
   <body>
-    <%= yield %>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <%= link_to "InsiderTrades.directory", root_path, class: "navbar-brand fw-bold" %>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <%= link_to "Built with Rails", built_with_rails_path, class: "nav-link" %>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <%= yield %>
+    </main>
+
+    <footer class="bg-dark text-light py-4 mt-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <h5>InsiderTrades.directory</h5>
+            <p class="mb-0">Demonstrating modern Rails development techniques and technical approaches.</p>
+          </div>
+          <div class="col-md-4">
+            <h6>Built With</h6>
+            <div class="d-flex flex-wrap gap-2">
+              <a href="https://rubyonrails.org/" target="_blank" class="badge bg-primary text-decoration-none">Rails 8</a>
+              <a href="https://claude.ai/code" target="_blank" class="badge bg-secondary text-decoration-none">Claude Code</a>
+              <a href="https://playwright.dev/" target="_blank" class="badge bg-success text-decoration-none">Playwright</a>
+              <a href="https://www.cloudflare.com/products/registrar/" target="_blank" class="badge bg-warning text-dark text-decoration-none">Cloudflare Domains</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <%# Bootstrap 5 JS %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

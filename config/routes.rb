@@ -9,6 +9,10 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # SEO-friendly blog routes for technical construction posts
+  get "built-with-rails", to: "blog#index", as: :built_with_rails
+  get "built-with-rails/:slug", to: "blog#show", as: :built_with_rails_post
+
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "blog#index"
 end

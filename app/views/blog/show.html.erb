@@ -1,0 +1,196 @@
+<%# SEO meta tags %>
+<% content_for(:title, "#{@post.title} - InsiderTrades.directory") %>
+<% content_for(:meta_description, @post.summary) %>
+
+<div class="container py-4">
+  <div class="row">
+    <div class="col-lg-8">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><%= link_to "Home", root_path, class: "text-decoration-none" %></li>
+          <li class="breadcrumb-item"><%= link_to "Built with Rails", built_with_rails_path, class: "text-decoration-none" %></li>
+          <li class="breadcrumb-item active" aria-current="page">Rails 8 Setup</li>
+        </ol>
+      </nav>
+      
+      <article class="mb-5">
+        <header class="mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <span class="badge bg-primary me-2"><%= @post.read_time %></span>
+            <small class="text-muted">Published <%= Date.current.strftime("%B %d, %Y") %></small>
+            <% unless @post.published? %>
+              <span class="badge bg-warning text-dark ms-2">Draft</span>
+            <% end %>
+          </div>
+          
+          <h1 class="display-5 fw-bold mb-3"><%= @post.title %></h1>
+          <p class="lead text-muted"><%= @post.summary %></p>
+        </header>
+        
+        <%# Video embed section %>
+        <% if @post.video_url.present? %>
+          <div class="mb-5">
+            <h2 class="h4 mb-3">📹 Watch the Development Process</h2>
+            <div class="ratio ratio-16x9">
+              <iframe 
+                src="<%= @post.video_url %>" 
+                title="<%= @post.title %> - Development Process"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <p class="small text-muted mt-2">
+              <em>This video documents the development process, showing real-time implementation including challenges and solutions.</em>
+            </p>
+          </div>
+        <% end %>
+        
+        <div class="content">
+          <% if @post.content.present? %>
+            <%= simple_format(@post.content, class: "mb-4") %>
+          <% else %>
+            <div class="alert alert-info">
+              <h4 class="alert-heading">🚧 Content Coming Soon</h4>
+              <p class="mb-0">This post is currently being developed. The content will be added shortly.</p>
+            </div>
+          <% end %>
+          
+          <%# Keep the existing content for the main published post %>
+          <% if @post.slug == "rails-8-rspec-playwright-setup" %>
+            <h2 class="h4 mb-3">🎯 What We Accomplished</h2>
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="card border-ionfo">
+                <div class="card-body">
+                  <h5 class="card-title text-info">🛠️ Tools Demonstrated</h5>
+                  <ul class="list-unstyled mb-0">
+                    <li>• <a href="https://claude.ai/code" target="_blank">Claude Code</a> CLI agent for heavy lifting</li>
+                    <li>• <a href="https://rubyonrails.org/" target="_blank">Rails 8.0.2.1</a> application created</li>
+                    <li>• <a href="https://playwright.dev/" target="_blank">Playwright</a> browser automation</li>
+                    <li>• <a href="https://www.cloudflare.com/products/registrar/" target="_blank">Cloudflare</a> domain registration</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card border-info">
+                <div class="card-body">
+                  <h5 class="card-title text-info">🧪 Git Commits</h5>
+                  <ul class="list-unstyled mb-0">
+                    <li>• <a href="https://github.com/stocklight/insidertrades.directory" target="_blank">github.com/stocklight/insidertrades.directory</a></li>
+                    <li>• <a href="https://github.com/InsiderTrades/insidertrades.directory/commit/1234567890" target="_blank">Initial Rails 8 project setup with RSpec testing framework</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <h2 class="h4 mb-3">🛠 Technical Walk-through</h2>
+
+          <h3 class="h5 mb-3">1. Sandboxed OSX account</h3>
+          <p>Because we're running AI agents fairly autonomously, we've mitigated the risk of them accessing anything that's not code related by using a <a href="https://support.apple.com/en-au/guide/mac-help/mchl3e281fc9/mac">separate</a> sandboxed OSX account that we can easily throw away when the robots go rogue.</p>
+
+          <h3 class="h5 mb-3">2. Claude Code, <em>YOLO</em> mode</h3>
+          <p>Now we are no longer concerned about security, we unleash Claude Code to whir in <a href="https://www.anthropic.com/engineering/claude-code-best-practices">all it's glory</a> using <code>--dangerously-skip-permissions</code>, unblocking it from asking for permission every time it wants to wipe it's nose:</p>
+          <pre class="bg-light p-3 rounded"><code>claude --dangerously-skip-permissions</code></pre>
+
+          <h3 class="h5 mb-3">3. CLAUDE.md guidelines</h3>
+          <p>For the time being, LLM's seem to operate more efficiently with a little guidance, here's a <a href="https://github.com/InsiderTrades/insidertrades.directory/blob/main/CLAUDE.md" target="_blank">CLAUDE.md</a> example that was used in the working directory for this session.</p>
+          <pre class="bg-light p-3 rounded"><code>
+### Playwright
+
+If I point you towards a url, you can use playwright to visit the url and infer context
+
+If you want to use playwright, you can do so from the home dir as follows:
+`cd ~; npx playwright`
+
+If you want to write temporary scripts (eg. to use playwright to do stuff), do so in:
+`~/tmp`
+
+and when doing so, create a permanent folder and put everything in there eg.
+`~/tmp/2025-07-28-playwright-seo-investigation/`
+
+ie. don't create files or projects outside of ~/tmp for experimental or temporary stuff or this folder if it's a proposed change to the source code of this project
+          </code></pre>
+          
+          <h3 class="h5 mb-3">4. Claude Prompt</h3>
+          <p>We started by creating a new Rails 8 project with the <code>--skip-test</code> flag to allow for RSpec integration:</p>
+          <pre class="bg-light p-3 rounded" style="overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code>Create a new rails project called insidertrades.directory in ~/workspace and using playwright, confirm it's working in a browser (without using headless mode). btw, I prefer rspec as my testing library. Record this in a markdown file in ~/tmp that can be used for a blog post. commit to git.</code></pre>
+          
+          <div class="alert alert-info">
+            <strong>💡 Key Insight:</strong> Sandboxed environment + Claude Code in YOLO mode = <em>Vibing Vibes</em>
+          </div>
+          
+          
+          <h2 class="h4 mb-3">🔗 Resources & Technologies</h2>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <h5>Primary Technologies</h5>
+              <ul class="list-unstyled">
+                <li><a href="https://rubyonrails.org/" target="_blank" class="text-decoration-none">🚀 Ruby on Rails 8.0</a></li>
+                <li><a href="https://rspec.info/" target="_blank" class="text-decoration-none">🧪 RSpec Testing Framework</a></li>
+                <li><a href="https://playwright.dev/" target="_blank" class="text-decoration-none">🎭 Playwright Browser Automation</a></li>
+                <li><a href="https://getbootstrap.com/" target="_blank" class="text-decoration-none">🎨 Bootstrap 5</a></li>
+              </ul>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h5>Development Tools</h5>
+              <ul class="list-unstyled">
+                <li><a href="https://claude.ai/code" target="_blank" class="text-decoration-none">🤖 Claude Code Assistant</a></li>
+                <li><a href="https://www.cloudflare.com/products/registrar/" target="_blank" class="text-decoration-none">🌐 Cloudflare Domain Registration</a></li>
+                <li><a href="https://git-scm.com/" target="_blank" class="text-decoration-none">📝 Git Version Control</a></li>
+                <li><a href="https://bundler.io/" target="_blank" class="text-decoration-none">💎 Bundler Dependency Management</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <h2 class="h4 mb-3">📈 What's Next</h2>
+          <p>This foundational setup enables us to build sophisticated features with confidence:</p>
+          <ul>
+            <li><strong>Database Integration:</strong> Adding PostgreSQL for production-ready data persistence</li>
+            <li><strong>Authentication System:</strong> Implementing secure user management</li>
+            <li><strong>API Development:</strong> Creating RESTful endpoints for insider trading data</li>
+            <li><strong>Performance Optimization:</strong> Implementing caching and query optimization</li>
+            <li><strong>Deployment Pipeline:</strong> Setting up automated testing and deployment</li>
+          </ul>
+          
+          <div class="alert alert-success">
+            <h5 class="alert-heading">🎉 Rails new complete!</h5>
+            <p class="mb-0">We successfully created a modern Ruby on Rails 8 application using Claude code. The foundations are set to start exposing some stockmarket insider activity.</p>
+          </div>
+          <% end %>
+        </div>
+      </article>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="sticky-top" style="top: 2rem;">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Related Posts</h5>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              <div class="list-group-item px-2 py-2 bg-light">
+                <small class="text-muted">Current Post</small><br>
+                <span class="small fw-bold"><%= @post.title %></span>
+              </div>
+              <% @related_posts.each do |related_post| %>
+                <div class="list-group-item px-2 py-2">
+                  <small class="text-muted">
+                    <%= related_post.published? ? related_post.published_date&.strftime("%b %d, %Y") : "Coming Soon" %>
+                  </small><br>
+                  <% if related_post.published? %>
+                    <%= link_to related_post.title, built_with_rails_post_path(related_post), class: "small text-decoration-none" %>
+                  <% else %>
+                    <span class="small text-muted"><%= related_post.title %></span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+            <%= link_to "← Back to All Posts", built_with_rails_path, class: "btn btn-outline-primary btn-sm mt-3" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

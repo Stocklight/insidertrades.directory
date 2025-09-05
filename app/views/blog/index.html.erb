@@ -1,0 +1,85 @@
+<%# SEO meta tags %>
+<% content_for(:title, "Built with Rails - InsiderTrades.directory") %>
+<% content_for(:meta_description, "Explore how InsiderTrades.directory was built with Rails - Learn about modern Rails development, testing frameworks, and deployment strategies.") %>
+
+<div class="bg-primary text-white py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <h1 class="display-4 fw-bold mb-3">Built with Rails</h1>
+        <p class="lead">Explore how InsiderTrades.directory was built using cutting-edge Rails development techniques, modern testing frameworks, and contemporary deployment strategies.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row">
+    <div class="col-lg-8">
+      <% @posts.each do |post| %>
+        <article class="card mb-4 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <span class="badge bg-secondary"><%= post.read_time %></span>
+                <small class="text-muted ms-2"><%= Date.current.strftime("%B %d, %Y") %></small>
+              </div>
+              <% unless post.published? %>
+                <span class="badge bg-warning text-dark">Draft</span>
+              <% end %>
+            </div>
+            
+            <h2 class="card-title h4">
+              <%= link_to post.title, built_with_rails_post_path(post), class: "text-decoration-none" %>
+            </h2>
+            
+            <p class="card-text text-muted mb-3"><%= post.summary %></p>
+            
+            <%= link_to "Read More →", built_with_rails_post_path(post), class: "btn btn-primary" %>
+          </div>
+        </article>
+      <% end %>
+      
+      <% if @posts.empty? %>
+        <div class="text-center py-5">
+          <h3 class="text-muted">No posts yet</h3>
+          <p>Technical construction posts will appear here as they are published.</p>
+        </div>
+      <% end %>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">About This Series</h5>
+        </div>
+        <div class="card-body">
+          <p class="small">This technical construction series documents the real-world development of InsiderTrades.directory, showcasing:</p>
+          <ul class="small">
+            <li>Modern Rails 8 patterns and conventions</li>
+            <li>Testing strategies with RSpec and Playwright</li>
+            <li>Deployment and infrastructure decisions</li>
+            <li>Performance optimization techniques</li>
+            <li>Security best practices</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Technologies Featured</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge bg-danger">Ruby 3.4.1</span>
+            <span class="badge bg-primary">Rails 8.0</span>
+            <span class="badge bg-success">RSpec</span>
+            <span class="badge bg-info">Playwright</span>
+            <span class="badge bg-warning text-dark">Bootstrap 5</span>
+            <span class="badge bg-secondary">Cloudflare</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
