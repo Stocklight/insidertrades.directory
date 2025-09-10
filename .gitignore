@@ -39,3 +39,6 @@
 ._*
 .Spotlight-V100
 .Trashes
+
+/opentofu/.terraform/providers/*
+/config/credentials/*.key
