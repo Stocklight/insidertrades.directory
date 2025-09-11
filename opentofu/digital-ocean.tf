@@ -51,6 +51,19 @@ resource "digitalocean_droplet" "web_droplet" {
   ]
 }
 
+resource "digitalocean_volume" "web_storage" {
+  region                  = "nyc1"
+  name                    = "insidertrades-directory-web-storage"
+  size                    = 30
+  initial_filesystem_type = "ext4"
+  description             = "30GB volume for web application storage"
+}
+
+resource "digitalocean_volume_attachment" "web_storage_volume_attachment" {
+  droplet_id = "${digitalocean_droplet.web_droplet.id}"
+  volume_id  = "${digitalocean_volume.web_storage.id}"
+}
+
 resource "digitalocean_firewall" "web_firewall" {
   name = "insidertrades-directory-web-firewall-production"
 
