@@ -22,7 +22,7 @@ resource "cloudflare_dns_record" "root_a_record" {
   comment = "Root record for digital ocean server not google"
   name    = "insidertrades.directory" # ie. @
   type    = "A"
-  content = "142.93.63.55"
+  content = "206.81.6.23"
   ttl     = 1
   proxied = false
 }

@@ -7,7 +7,7 @@ image: insidertradesdirectory/insidertrades_directory
 # Deploy to these servers.
 servers:
   web:
-    - 142.93.63.55
+    - 206.81.6.23
   # job:
   #   hosts:
   #     - 192.168.0.1
