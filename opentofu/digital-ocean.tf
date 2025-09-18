@@ -87,6 +87,11 @@ resource "digitalocean_firewall" "web_firewall" {
     source_addresses = ["0.0.0.0/0", "::/0"]
   }
 
+  inbound_rule {
+    protocol         = "icmp"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
   # Allow all outbound traffic
   outbound_rule {
     protocol              = "tcp"
