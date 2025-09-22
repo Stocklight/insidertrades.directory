@@ -24,7 +24,9 @@
 # Any libraries that use a connection pool or another resource pool should
 # be configured to provide at least as many connections as the number of
 # threads. This includes Active Record's `pool` parameter in `database.yml`.
-threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
+#
+# Reduced thread count for lower memory usage on Digital Ocean
+threads_count = ENV.fetch("RAILS_MAX_THREADS", 2)
 threads threads_count, threads_count
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
@@ -34,8 +36,28 @@ port ENV.fetch("PORT", 3000)
 plugin :tmp_restart
 
 # Run the Solid Queue supervisor inside of Puma for single-server deployments
+# Disabled by default to reduce memory usage - enable via SOLID_QUEUE_IN_PUMA env var
 plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
 # In other environments, only set the PID file if requested.
 pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
+
+# Memory optimization settings for Digital Ocean
+# Reduce memory usage by limiting worker processes
+workers ENV.fetch("WEB_CONCURRENCY", 1)
+
+# Preload the app for better memory efficiency
+preload_app!
+
+# Set memory limits to prevent runaway processes
+# This helps with memory management on smaller Digital Ocean droplets
+before_fork do
+  # Close database connections before forking
+  ActiveRecord::Base.connection_pool.disconnect! if defined?(ActiveRecord::Base)
+end
+
+on_worker_boot do
+  # Reconnect to database after forking
+  ActiveRecord::Base.establish_connection if defined?(ActiveRecord::Base)
+end

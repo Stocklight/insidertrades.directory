@@ -38,13 +38,18 @@ env:
   clear:
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
     # When you start using multiple servers, you should split out job processing to a dedicated machine.
-    SOLID_QUEUE_IN_PUMA: true
+    # Disabled by default to reduce memory usage - uncomment to enable
+    # SOLID_QUEUE_IN_PUMA: true
 
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3
 
     # Set number of cores available to the application on each server (default: 1).
-    # WEB_CONCURRENCY: 2
+    # Reduced to 1 worker for lower memory usage on Digital Ocean
+    WEB_CONCURRENCY: 1
+    
+    # Reduce thread count for lower memory usage
+    RAILS_MAX_THREADS: 2
 
     # Match this to any external database server to configure Active Record correctly
     # Use insidertrades_directory-db for a db accessory server on same machine via local kamal docker network.
