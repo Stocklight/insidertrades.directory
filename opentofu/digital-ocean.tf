@@ -22,7 +22,7 @@ resource "digitalocean_droplet" "web_droplet" {
   image     = "ubuntu-22-04-x64"
   name      = "insidertrades-directory-web-production"
   region    = "nyc1"
-  size      = "s-1vcpu-512mb-10gb"
+  size      = "s-1vcpu-1gb"
   ssh_keys  = [digitalocean_ssh_key.kamal_deploy.fingerprint]
 
   provisioner "remote-exec" {
