@@ -10,14 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_05_052843) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_28_234550) do
   create_table "posts", force: :cascade do |t|
     t.string "title", null: false
     t.string "slug", null: false
     t.text "summary"
     t.text "content"
     t.string "read_time"
-    t.string "video_url"
+    t.string "youtube_slug"
     t.date "published_date"
     t.string "status", default: "draft"
     t.datetime "created_at", null: false

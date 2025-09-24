@@ -4,7 +4,7 @@ class Post < ApplicationRecord
   validates :status, inclusion: { in: %w[draft published archived] }
   
   scope :published, -> { where(status: 'published') }
-  scope :by_date, -> { order(published_date: :desc, created_at: :desc) }
+  scope :by_date, -> { order(published_date: :asc, created_at: :desc) }
   
   before_validation :generate_slug, if: -> { slug.blank? && title.present? }
   

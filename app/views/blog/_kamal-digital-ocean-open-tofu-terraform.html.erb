@@ -1,0 +1,380 @@
+<h2 class="h4 mb-3">🎯 What We'll Cover</h2>
+<div class="row mb-4">
+  <div class="col-md-12">
+    <p>This guide walks you through setting up a Ruby on Rails server on Digital Ocean. The server is provisioned using Open Tofu (Terraform) so that the infrastructure is documented in code and the application is deployed with Kamal meaning no AWS, Heroku or PAAS needed.</p>
+  </div>
+  <div class="col-md-6">
+    <div class="card border-warning">
+      <div class="card-body">
+        <h5 class="card-title text-warning">🛠️ Technologies</h5>
+        <ul class="list-unstyled mb-0">
+          <li>• <a href="https://kamal-deploy.org/">Kamal</a> for application deployment</li>
+          <li>• <a href="https://digitalocean.com/">Digital Ocean</a> Ruby on Rails hosting</li>
+          <li>• <a href="https://www.cloudflare.com/">Cloudflare</a> DNS hosting</li>
+          <li>• <a href="https://opentofu.org/">Open Tofu </a> for infrastructure as code (like <a href="https://terraform.io">Terraform</a>)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card border-warning">
+      <div class="card-body">
+        <h5 class="card-title text-warning">🎯 What You'll Learn</h5>
+        <ul class="list-unstyled mb-0">
+          <li>• Ruby on Rails on a Digital Ocean droplet</li>
+          <li>• Configuring Cloudflare DNS</li>
+          <li>• Infrastructure provisioning with Open Tofu (Terraform)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="h4 mb-3">📋 Prerequisites</h2>
+<ul>
+  <li>Domain name registered with <a href="https://domains.cloudflare.com">Cloudflare</a></li>
+  <li><a href="https://hub.docker.com">Docker.com</a> account</li>
+  <li>Paid Digital Ocean account</li>
+</ul>
+
+<div class="alert alert-warning">
+  <strong>⚠️ Note:</strong> 
+  this hosting package costs ~$5 per month and can be instantly de-provisioned by issuing <code> tofu destroy</code> later
+</div>
+
+<h2 class="h4 mb-3">🛠 Technical Walk-through</h2>
+
+<h3 class="h5 mb-3">1. Prepare API tokens as Open Tofu (Terraform) environment variables</h3>
+<p>Before we can deploy our Ruby on Rails application to Digital Ocean, we need to set up the necessary API tokens as environment variables for Open Tofu to be able to terraform the infrastructure:</p>
+
+<h4 class="h6 mb-2">Digital Ocean API Token</h4>
+<p>Generate a Digital Ocean Personal Access (API) token per <a href="https://cloud.digitalocean.com/account/api/tokens">these docs</a> (<a href="https://www.youtube.com/watch?v=5NHOwOTCn_k&t=174s">13:00</a> in the video) with 
+<em>no expiry date</em> and the following <a href="https://docs.digitalocean.com/reference/api/scopes/">custom scopes</a>:
+ 
+ <pre class="bg-light p-3 rounded" style="overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code>• block_storage
+• block_storage_action
+• droplet
+• firewall
+• ssh_key
+• tag</code></pre>
+ then set it as an environment variable so it can be terraformed by the <a href="https://github.com/Stocklight/insidertrades.directory/blob/8633e745b8b20fd98deca2062de0b2d70f2b2f75/opentofu/digital-ocean.tf#L1-L5">digital-ocean.tf</a> script below:</p>
+<pre class="bg-light p-3 rounded"><code>export TF_VAR_digital_ocean_token="your-digital-ocean-api-token"</code></pre>
+
+<h4 class="h6 mb-2">Cloudflare API Token</h4>
+<p>Create a <a href="https://dash.cloudflare.com/profile/api-tokens">Cloudflare (API) token</a> with <b>Edit zone DNS</b> permission 
+and export it as an environment variable so it can be terraformed by the 
+<a href="https://github.com/Stocklight/insidertrades.directory/blob/8633e745b8b20fd98deca2062de0b2d70f2b2f75/opentofu/cloudflare.tf#L1-L5">cloudflare.tf</a> script below:</p>
+<pre class="bg-light p-3 rounded"><code>export TF_VAR_cloudflare_token="your-cloudflare-api-token"</code></pre>
+
+<h4 class="h6 mb-2">State Encryption Passphrase</h4>
+<p>Set a secure passphrase for <a href="https://opentofu.org/docs/language/state/encryption/">encrypting</a> your Open Tofu (Terraform) state files and store this somewhere safe:</p>
+<pre class="bg-light p-3 rounded"><code># eg. `openssl rand -base64 32`
+export TF_VAR_state_encryption_passphrase="your-secure-passphrase"</code></pre>
+<div class="alert alert-warning">
+  <strong>⚠️ Note:</strong> 
+  An advantage of Open Tofu compared to Terraform is that you can encrypt the state configuration and store it directly in source control (eg. github) 
+  as compared to Terraform which requires you to <a href="https://developer.hashicorp.com/terraform/language/manage-sensitive-data">configure S3, GCS or HCP</a> as a separate dependency.
+</div>
+
+<h4 class="h6 mb-2">Docker Hub Account</h4>
+<p>Finally, create a <a href="https://hub.docker.com/">Docker Hub account</a> and set your password as an environment variable so it can be read by <a href="https://github.com/Stocklight/insidertrades.directory/blob/8633e745b8b20fd98deca2062de0b2d70f2b2f75/.kamal/secrets#L14">.kamal/secrets</a> when rails is deploying:</p>
+<pre class="bg-light p-3 rounded"><code>export KAMAL_REGISTRY_PASSWORD="your-docker-hub-password"</code></pre>
+
+<h3 class="h5 mb-3">2. Provision a Digital Ocean Droplet via Open Tofu (Terraform)</h3>
+<p>We'll use <a href="https://opentofu.org/">OpenTofu</a> (an open-source Terraform fork) to provision our infrastructure. 
+
+<div class="alert alert-warning">
+  <strong>⚠️ Note:</strong> 
+  The video was missing a few things that have been updated in the scripts below, importantly:
+  <ul>
+  <li><a href="https://github.com/Stocklight/insidertrades.directory/commit/6f79c946d50f3bcca65e372a4cfc4fac7a982938">Exposing ICMP</a> (ping) in the firewall - this caused the DNS resolution to flake a bit before the change</li>
+  <li><a href="https://github.com/Stocklight/insidertrades.directory/commit/8217f6b5b8e91354cb4d7ec56bbe9dcd976c7034#diff-857a8529595a4f553ca569fc05726c1add295992168b4e65a297a1d417be0d25L53">Provisioning a dedicated digital ocean volume</a> - the original script tried to get away with just the 10gb of storage on the droplet however that caused the rails 8 app to crash consistently due to insufficient memory.
+  <li><a href="https://github.com/Stocklight/insidertrades.directory/commit/8633e745b8b20fd98deca2062de0b2d70f2b2f75">1gb of RAM on the droplet ie. 's-1vcpu-1gb'</a> because the minimum droplet specs on digital ocean of <b>s-1vcpu-512mb-10gb</b> were causing the rails 8 app to swap to disk due to insufficient memory</li>
+  </ul>
+  Lesson learnt: <em>1gb of ram and 30gb volume storage are <b>minimum specs</b> for a rails 8 app on digital ocean</em>
+</div>
+</p>
+
+<h4 class="h6 mb-2">Create Terraform Configuration Files</h4>
+<p>First, let's create our Terraform configuration files so that we can <a href="https://raw.githubusercontent.com/Stocklight/insidertrades.directory/refs/heads/main/opentofu/terraform.tfstate">commit it to source control</a> without exposing sensitive information:</p>
+
+<p><strong>state-encryption.tf</strong></p>
+<pre class="bg-light p-3 rounded" style="overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code>variable "state_encryption_passphrase" {
+  description = "Passphrase for encrypting Open Tofu state files"
+  type        = string
+  sensitive   = true
+}
+
+terraform {
+  required_version = ">= 1.0"
+  
+  required_providers {
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "~> 2.40"
+    }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
+  }
+
+  encryption {
+    key_provider "pbkdf2" "state_key" {
+      passphrase    = var.state_encryption_passphrase
+      key_length    = 32
+      salt_length   = 32
+      hash_function = "sha256"
+      iterations    = 600000
+    }
+
+    method "aes_gcm" "state_method" {
+      keys = key_provider.pbkdf2.state_key
+    }
+
+    state {
+      method = method.aes_gcm.state_method
+    }
+  }
+}</code></pre>
+
+<p>now, let's create the Digital Ocean droplet with an attached volume of storage and a firewall and output the public IP address and private SSH key:</p>
+
+<p><strong>digital-ocean.tf</strong></p>
+<pre class="bg-light p-3 rounded" style="overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code>variable "digital_ocean_token" {
+  description = "Digital Ocean API token"
+  type        = string
+  sensitive   = true
+}
+
+provider "digitalocean" {
+  token = var.digital_ocean_token
+}
+
+resource "tls_private_key" "kamal_deploy" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "digitalocean_ssh_key" "kamal_deploy" {
+  name       = "insidertrades-directory-kamal-deploy-key"
+  public_key = tls_private_key.kamal_deploy.public_key_openssh
+}
+
+resource "digitalocean_droplet" "web_droplet" {
+  image     = "ubuntu-22-04-x64"
+  name      = "insidertrades-directory-web-production"
+  region    = "nyc1"
+  size      = "s-1vcpu-1gb"
+  ssh_keys  = [digitalocean_ssh_key.kamal_deploy.fingerprint]
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt update",
+      "sudo apt install -y -o DPkg::Lock::Timeout=60 docker.io",
+      "sudo systemctl start docker",
+      "sudo systemctl enable docker"
+    ]
+  }
+  backups = true
+  
+  monitoring = true
+
+  connection {
+    type        = "ssh"
+    user        = "root"
+    private_key = tls_private_key.kamal_deploy.private_key_pem
+    host        = self.ipv4_address
+  }  
+  
+  tags = [
+    "insidertrades-directory",
+    "production",
+    "web"
+  ]
+}
+
+resource "digitalocean_volume" "web_storage" {
+  region                  = "nyc1"
+  name                    = "insidertrades-directory-web-storage"
+  size                    = 30
+  initial_filesystem_type = "ext4"
+  description             = "30GB volume for web application storage"
+}
+
+resource "digitalocean_volume_attachment" "web_storage_volume_attachment" {
+  droplet_id = "${digitalocean_droplet.web_droplet.id}"
+  volume_id  = "${digitalocean_volume.web_storage.id}"
+}
+
+resource "digitalocean_firewall" "web_firewall" {
+  name = "insidertrades-directory-web-firewall-production"
+
+  droplet_ids = [digitalocean_droplet.web_droplet.id]
+
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "22"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "80"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "443"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  inbound_rule {
+    protocol         = "icmp"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # Allow all outbound traffic
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "1-65535"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol              = "udp"
+    port_range            = "1-65535"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol              = "icmp"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+}
+
+output "ip_address" {
+  description = "Public IP address of the web server"
+  value       = digitalocean_droplet.web_droplet.ipv4_address
+}
+
+output "ssh_private_key" {
+  description = "Private SSH key for Kamal deployment (keep secure!)"
+  value       = tls_private_key.kamal_deploy.private_key_pem
+  sensitive   = true
+}</code></pre>
+
+<h4 class="h6 mb-2">Deploy Infrastructure with OpenTofu</h4>
+<p>Now let's provision our infrastructure:</p>
+<pre class="bg-light p-3 rounded"><code>brew install opentofu
+mkdir opentofu
+cd opentofu
+tofu init .
+tofu plan
+tofu apply</code></pre>
+
+<p> and then configure SSH access to the droplet:</p>
+<pre class="bg-light p-3 rounded"><code>tofu output ip_address
+tofu output -raw ssh_private_key > ~/.ssh/insidertrades_digital_ocean_deploy_key
+chmod 600 ~/.ssh/insidertrades_digital_ocean_deploy_key
+vi ~/.ssh/config</code></pre>
+
+<p>Add the following configuration replacing <em>TODO-IPADDRESS</em> with the actual IP from the open tofu output above:</p>
+
+<b>~/.ssh/config</b>
+<pre class="bg-light p-3 rounded"><code>Host TODO-IPADDRESS
+  User root
+  IdentityFile ~/.ssh/insidertrades_digital_ocean_deploy_key
+  IdentitiesOnly yes</code></pre>
+
+<p>Test your SSH connection:</p>
+<pre class="bg-light p-3 rounded"><code>ssh root@..ip-address...</code></pre>
+
+<h3 class="h5 mb-3">3. Configure DNS with Cloudflare</h3>
+<p>Now let's configure DNS with Cloudflare so that our application is accessible via your registered domain name. First, copy this script to your opentofu directory, 
+replacing <code>your-cloudflare-account-id</code> with your actual Cloudflare account ID per the instructions below:</p>
+
+<p><strong>cloudflare.tf</strong></p>
+<pre class="bg-light p-3 rounded"><code>variable "cloudflare_token" {
+  description = "Cloudflare API token"
+  type        = string
+  sensitive   = true
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_token
+}
+
+resource "cloudflare_zone" "insidertrades_directory_zone" {
+  name = "insidertrades.directory"
+  account = {
+    id = "your-cloudflare-account-id"
+  }
+  type = "full"
+}
+</code></pre>
+
+<p>Before we can terraform the DNS record, Open Tofu needs to import the cloudflare zone, so run:</p>
+<pre class="bg-light p-3 rounded"><code>tofu import cloudflare_zone.insidertrades_directory_zone YOUR-CLOUDFLARE-ZONE-ID</code></pre>
+
+<div class="alert alert-warning">
+  <strong>⚠️ Note:</strong> 
+  You'll find your cloudflare zone ID at <code>Domain > Overview > Account ID</code> (<a href="https://www.youtube.com/watch?v=5NHOwOTCn_k&t=780s">13:00</a> in the video)
+</div>
+
+<p>once that's out of the way, add the A record for your domain name to point to the digital ocean IP address to the bottom of your cloudflare.tf script so that it 
+<a href="https://github.com/Stocklight/insidertrades.directory/blob/8633e745b8b20fd98deca2062de0b2d70f2b2f75/opentofu/cloudflare.tf#L20-L28">looks something like this</a>:</p>
+<pre class="bg-light p-3 rounded"><code>resource "cloudflare_dns_record" "root_a_record" {
+  zone_id = cloudflare_zone.insidertrades_directory_zone.id
+  comment = "Root record for digital ocean server not google"
+  name    = "insidertrades.directory" # ie. @
+  type    = "A"
+  content = "206.81.6.23"
+  ttl     = 1
+  proxied = false
+}
+</code></pre>
+
+<p>and then run:</p>
+<pre class="bg-light p-3 rounded"><code>tofu apply</code></pre>
+
+<p>🥳 Well done, if everything went to plan, your server and DNS is now configured and you're ready to deploy your application with Kamal.</p>
+
+<h3 class="h5 mb-3">4. Deploy Application with Kamal</h3>
+
+<h4 class="h6 mb-2">Generate your production credentials:</h4>
+
+<pre class="bg-light p-3 rounded"><code>bin/rails credentials:edit --environment production</code></pre>
+
+<p>then edit <a href="https://github.com/Stocklight/insidertrades.directory/blob/8633e745b8b20fd98deca2062de0b2d70f2b2f75/.kamal/secrets#L17">.kamal/secrets</a> to point to your generated key</p>
+
+<strong>.kamal/secrets</strong>
+<pre class="bg-light p-3 rounded"><code>...
+RAILS_MASTER_KEY=$(cat config/credentials/production.key)
+</code></pre>
+
+<p> then update your kamal deployment configurations in <a href="https://github.com/Stocklight/insidertrades.directory/commit/d4b33def6a1df118c8b3678f966c4f9285b05937#diff-fa61612ba96bd682e6fcf1734a4558f3569972a070a4fe902b85972a485b6a36">config/deploy.yml</a> with your:
+<ul>
+<li>docker.com username and image location</li>
+<li>IP address of your digital ocean droplet (from the tofu output above)</li>
+<li>domain name</li>
+</ul>
+
+eg.
+<pre class="bg-light p-3 rounded"><code>image: insidertradesdirectory/insidertrades_directory
+
+registry:
+  username: insidertradesdirectory
+
+proxy:
+  host: insidertrades.directory
+</code></pre>
+
+
+<p>and finally, deploy your Rails application 🚀:</p>
+<pre class="bg-light p-3 rounded"><code>kamal deploy</code></pre>
+
+<div class="alert alert-success">
+  <strong>🎉 Infrastructure Ready!</strong> Your Digital Ocean droplet is now provisioned with a secure firewall, kamal deployment via docker and your rails app should be live and accessible via your domain name. This websdite (<a href="https://insidertrades.directory">insidertrades.directory</a>) was created using this demo.
+</div>
