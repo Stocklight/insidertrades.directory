@@ -5,7 +5,7 @@ Rails.application.routes.draw do
       post :verify_code
     end
   end
-  
+
   get "signin", to: "sessions#new"
   post "signin", to: "sessions#create"
   get "verify", to: "sessions#verify"

@@ -8,7 +8,7 @@ class GoogleSignin
     @web_credential = web_credential
     @client_id = WEB_CLIENT_ID
   end
-  
+
   def valid?
     return false if @web_credential.blank?
 
@@ -17,12 +17,12 @@ class GoogleSignin
       client_id: @client_id,
     ).stringify_keys
 
-    @email = validated_token['email']
-    @first_name = validated_token['given_name']
-    @last_name = validated_token['family_name']
-    @photo_url = validated_token['picture']
-    @user_id = validated_token['sub']
-    
+    @email = validated_token["email"]
+    @first_name = validated_token["given_name"]
+    @last_name = validated_token["family_name"]
+    @photo_url = validated_token["picture"]
+    @user_id = validated_token["sub"]
+
     @email.present?
   rescue => e
     Rails.logger.error "Google signin validation failed: #{e.message}"
