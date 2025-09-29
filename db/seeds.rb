@@ -23,10 +23,19 @@ posts_data = [
     status: "published"
   },
   {
-    title: "Turbolinks / View Component, no webpacker node or js",
-    slug: "turbolinks-view-component-no-webpacker",
-    summary: "Building modern Rails apps without JavaScript complexity using Turbolinks and ViewComponent",
-    read_time: "5 min read",
+    title: "Google Signin with Rails Authentication Generator",
+    slug: "google-signin-with-rails-authentication-generator",
+    summary: "Adding Google Signin to a Ruby on Rails app using the authentication generator",
+    read_time: "5 min read + 13 min video",
+    youtube_slug: "tCVEMj-D5zI",
+    published_date: Date.new(2025, 9, 29),
+    status: "published"
+  },
+  {
+    title: "Exception Notifier with Slack integration",
+    slug: "exception-notifier-with-slack-integration",
+    summary: "Adding exception notifier to a Ruby on Rails app with a Slack integration - no data dog / airbrake / rollbar / sentry / etc.",
+    read_time: "5 min read + 10 min video",
     youtube_slug: nil,
     published_date: Date.new(2025, 11, 1),
     status: "draft"
@@ -39,7 +48,7 @@ posts_data = [
     youtube_slug: nil,
     published_date: Date.new(2025, 12, 1),
     status: "draft"
-  },
+  }
 ]
 
 puts "Creating blog posts..."
@@ -47,7 +56,7 @@ puts "Creating blog posts..."
 posts_data.each do |post_attrs|
   post = Post.find_or_initialize_by(slug: post_attrs[:slug])
   post.assign_attributes(post_attrs)
-  
+
   if post.save
     puts "✓ Created/Updated: #{post.title}"
   else
