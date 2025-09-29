@@ -5,6 +5,7 @@ class UsersMailer < ApplicationMailer
     
     mail(
       to: user.email_address,
+      from: "no-reply@insidertrades.directory",
       subject: "Your verification code"
     )
   end

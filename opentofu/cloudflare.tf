@@ -26,3 +26,43 @@ resource "cloudflare_dns_record" "root_a_record" {
   ttl     = 1
   proxied = false
 }
+
+resource "cloudflare_dns_record" "sendgrid_record" {
+  zone_id = cloudflare_zone.insidertrades_directory_zone.id
+  comment = "Sendgrid DNS for email delivery"
+  name    = "em6518"
+  type    = "CNAME"
+  content = "u56390052.wl053.sendgrid.net"
+  ttl     = 1
+  proxied = false
+}
+
+resource "cloudflare_dns_record" "sendgrid_domainkey_record_1" {
+  zone_id = cloudflare_zone.insidertrades_directory_zone.id
+  comment = "Sendgrid Domainkey for email delivery"
+  name    = "s1._domainkey"
+  type    = "CNAME"
+  content = "s1.domainkey.u56390052.wl053.sendgrid.net"
+  ttl     = 1
+  proxied = false
+}
+
+resource "cloudflare_dns_record" "sendgrid_domainkey_record_2" {
+  zone_id = cloudflare_zone.insidertrades_directory_zone.id
+  comment = "Sendgrid Domainkey for email delivery"
+  name    = "s2._domainkey"
+  type    = "CNAME"
+  content = "s2.domainkey.u56390052.wl053.sendgrid.net"
+  ttl     = 1
+  proxied = false
+}
+
+resource "cloudflare_dns_record" "sendgrid_dmarc_record" {
+  zone_id = cloudflare_zone.insidertrades_directory_zone.id
+  comment = "Sendgrid DMARC for email delivery"
+  name    = "_dmarc.insidertrades.directory"
+  type    = "TXT"
+  content = "v=DMARC1; p=none;"
+  ttl     = 1
+  proxied = false
+}
