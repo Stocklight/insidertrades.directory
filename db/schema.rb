@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_29_031843) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_29_043752) do
   create_table "posts", force: :cascade do |t|
     t.string "title", null: false
     t.string "slug", null: false
@@ -42,6 +42,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_29_031843) do
     t.datetime "updated_at", null: false
     t.string "verification_code"
     t.datetime "verification_code_generated_at"
+    t.string "google_user_id"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "photo_url"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 

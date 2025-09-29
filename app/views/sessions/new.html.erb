@@ -3,6 +3,38 @@
   <div class="signin-form" style="flex: 1; padding: 2rem; background: #f8f9fa; border-radius: 8px;">
     <h2>Join our mailing list</h2>
     
+   <!-- Google Sign-In Button -->
+    <div style="margin-bottom: 2rem;">
+      <div id="g_id_onload"
+        data-client_id="<%= GoogleSignin::WEB_CLIENT_ID %>"
+        data-context="signin"
+        data-ux_mode="redirect"
+        data-login_uri="<%= google_signin_url %>"
+        data-auto_prompt="false"
+        data-itp_support="true">
+      </div>
+
+      <div class="g_id_signin"
+        data-type="standard"
+        data-shape="rectangular"
+        data-theme="outline"
+        data-text="continue_with"
+        data-size="large"
+        data-logo_alignment="left">
+      </div>
+
+      <% content_for(:head) do %>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+      <% end %>
+
+    </div>
+    
+    <!-- Divider -->
+    <div style="text-align: center; margin: 2rem 0; position: relative;">
+      <hr style="border: none; border-top: 1px solid #ddd; margin: 0;">
+      <span style="background: #f8f9fa; padding: 0 1rem; color: #666; position: absolute; top: -0.5rem; left: 50%; transform: translateX(-50%);">or</span>
+    </div>
+
     <%= form_with url: signin_path, local: true, class: "subscription-form" do |form| %>
       <div style="margin-bottom: 1.5rem;">
         <%= form.email_field :email_address, 

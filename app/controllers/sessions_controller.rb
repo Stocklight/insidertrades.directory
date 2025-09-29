@@ -1,6 +1,7 @@
 class SessionsController < ApplicationController
   require_authentication only: :destroy
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_session_url, alert: "Try again later." }
+  skip_before_action :verify_authenticity_token, only: [:create_for_google]
 
   def new
     # Show signin form with email subscription
@@ -79,5 +80,34 @@ class SessionsController < ApplicationController
   def destroy
     terminate_session
     redirect_to root_path, notice: "You have been signed out."
+  end
+
+  def create_for_google
+    google_signin = GoogleSignin.new(web_credential: params[:credential])
+
+    if google_signin.valid?
+      # Find or create user by email
+      user = User.find_or_initialize_by(email_address: google_signin.email)
+      
+      # Update Google user ID if it's a new association
+      user.google_user_id = google_signin.user_id if user.google_user_id.blank?
+      user.first_name = google_signin.first_name if user.first_name.blank?
+      user.last_name = google_signin.last_name if user.last_name.blank?
+      user.photo_url = google_signin.photo_url if user.photo_url.blank?
+      user.save!
+      
+      # Sign them in
+      start_new_session_for(user)
+      
+      flash[:notice] = "Successfully signed in with Google!"
+      redirect_to root_path
+    else
+      flash[:alert] = "Could not authenticate you from Google"
+      redirect_to signin_path
+    end
+  rescue => e
+    Rails.logger.error "Google signin error: #{e.message}"
+    flash[:alert] = "Could not authenticate you from Google"
+    redirect_to signin_path
   end
 end

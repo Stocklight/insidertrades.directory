@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   post "signin", to: "sessions#create"
   get "verify", to: "sessions#verify"
   post "verify", to: "sessions#verify_code"
+  post "google-signin", to: "sessions#create_for_google", as: :google_signin
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
