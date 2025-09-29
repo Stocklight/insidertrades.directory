@@ -38,12 +38,33 @@
             <li class="nav-item">
               <%= link_to "Built with Rails", built_with_rails_path, class: "nav-link" %>
             </li>
+            <li class="nav-item">
+              <% if authenticated? %>
+                <%= button_to "Sign Out", session_path, method: :delete, 
+                    class: "btn btn-outline-light btn-sm ms-2", 
+                    style: "border-color: #fff;" %>
+              <% else %>
+                <%= link_to "Join mailing list", signin_path, 
+                    class: "btn btn-primary btn-sm ms-2" %>
+              <% end %>
+            </li>
           </ul>
         </div>
       </div>
     </nav>
 
     <main>
+      <% if flash.any? %>
+        <div class="container mt-3">
+          <% flash.each do |type, message| %>
+            <div class="alert alert-<%= type == 'notice' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
+              <%= message %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      
       <%= yield %>
     </main>
 

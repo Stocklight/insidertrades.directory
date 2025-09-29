@@ -1,4 +1,15 @@
 Rails.application.routes.draw do
+  resource :session do
+    member do
+      get :verify
+      post :verify_code
+    end
+  end
+  
+  get "signin", to: "sessions#new"
+  post "signin", to: "sessions#create"
+  get "verify", to: "sessions#verify"
+  post "verify", to: "sessions#verify_code"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

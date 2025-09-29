@@ -1,0 +1,60 @@
+<div class="signin-container" style="display: flex; min-height: 70vh; gap: 2rem;">
+  <!-- Left Panel - Email Subscription Form -->
+  <div class="signin-form" style="flex: 1; padding: 2rem; background: #f8f9fa; border-radius: 8px;">
+    <h2>Join our mailing list</h2>
+    
+    <%= form_with url: signin_path, local: true, class: "subscription-form" do |form| %>
+      <div style="margin-bottom: 1.5rem;">
+        <%= form.email_field :email_address, 
+            placeholder: "Enter your email address",
+            required: true,
+            style: "width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;" %>
+      </div>
+      
+      <div>
+        <%= form.submit "Subscribe", 
+            style: "background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%;" %>
+      </div>
+    <% end %>
+    
+    <p style="margin-top: 1rem; font-size: 14px; color: #666;">
+      We'll send you a verification code to confirm your email address.
+    </p>
+  </div>
+  
+  <!-- Right Panel - Benefits -->
+  <div class="benefits-panel" style="flex: 1; padding: 2rem;">
+    <h3>Why join our mailing list?</h3>
+    
+    <ul style="list-style: none; padding: 0;">
+      <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+        <span style="position: absolute; left: 0; color: #28a745;">✓</span>
+        <strong>Exclusive insights</strong> - Get insider trading analysis delivered to your inbox
+      </li>
+      
+      <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+        <span style="position: absolute; left: 0; color: #28a745;">✓</span>
+        <strong>Early access</strong> - Be the first to know about new features and updates
+      </li>
+      
+      <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+        <span style="position: absolute; left: 0; color: #28a745;">✓</span>
+        <strong>Market alerts</strong> - Receive notifications about significant insider trading activity
+      </li>
+      
+      <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+        <span style="position: absolute; left: 0; color: #28a745;">✓</span>
+        <strong>Weekly summaries</strong> - Get curated highlights of the most important trades
+      </li>
+      
+      <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+        <span style="position: absolute; left: 0; color: #28a745;">✓</span>
+        <strong>No spam</strong> - We respect your inbox and only send valuable content
+      </li>
+    </ul>
+    
+    <div style="margin-top: 2rem; padding: 1rem; background: #e9ecef; border-radius: 4px; font-size: 14px;">
+      <strong>Privacy note:</strong> Your email will only be used for our mailing list and will never be shared with third parties.
+    </div>
+  </div>
+</div>

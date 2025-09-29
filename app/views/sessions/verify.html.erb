@@ -1,0 +1,55 @@
+<div class="verify-container" style="max-width: 500px; margin: 2rem auto; padding: 2rem; background: #f8f9fa; border-radius: 8px; text-align: center;">
+  <h2>Enter verification code</h2>
+  
+  <p style="margin-bottom: 2rem; color: #666;">
+    We've sent a 6-digit verification code to your email address. 
+    Please enter it below to complete your subscription.
+  </p>
+  
+  <%= form_with url: verify_path, local: true, class: "verification-form" do |form| %>
+    <div style="margin-bottom: 1.5rem;">
+      <%= form.text_field :verification_code, 
+          placeholder: "000000",
+          maxlength: 6,
+          pattern: "[0-9]{6}",
+          required: true,
+          style: "width: 200px; padding: 15px; border: 2px solid #ddd; border-radius: 4px; font-size: 24px; text-align: center; letter-spacing: 0.2em;" %>
+    </div>
+    
+    <div style="margin-bottom: 1rem;">
+      <%= form.submit "Verify Code", 
+          style: "background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer;" %>
+    </div>
+  <% end %>
+  
+  <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+    <p style="font-size: 14px; color: #666; margin-bottom: 0.5rem;">
+      Code expires in 15 minutes
+    </p>
+    
+    <p style="font-size: 14px;">
+      Didn't receive the code? 
+      <%= link_to "Try again", signin_path, style: "color: #007bff; text-decoration: none;" %>
+    </p>
+  </div>
+</div>
+
+<script>
+  // Auto-focus the verification code input
+  document.addEventListener('DOMContentLoaded', function() {
+    const input = document.querySelector('input[name="verification_code"]');
+    if (input) {
+      input.focus();
+      
+      // Auto-submit when 6 digits are entered
+      input.addEventListener('input', function(e) {
+        if (e.target.value.length === 6) {
+          // Small delay to let user see they've completed it
+          setTimeout(() => {
+            e.target.closest('form').submit();
+          }, 300);
+        }
+      });
+    }
+  });
+</script>
