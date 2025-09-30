@@ -1,0 +1,169 @@
+<section class="mb-5">
+  <h2>Implementation Overview</h2>
+  <p>This session involved implementing a complete analytics solution using two powerful Rails gems based on the excellent <a href="https://gorails.com/episodes/internal-metrics-with-ahoy-and-blazer">GoRails tutorial on Internal Metrics</a>:</p>
+  <ul>
+    <li><strong><a href="https://github.com/ankane/ahoy" target="_blank">Ahoy</a></strong> - For tracking user visits and events</li>
+    <li><strong><a href="https://github.com/ankane/blazer" target="_blank">Blazer</a></strong> - For creating business intelligence dashboards and queries</li>
+  </ul>
+</section>
+
+
+<div class="alert alert-info">
+  <strong>💡 Voice Control of Claude Code CLI:</strong> Refer to <a href="https://youtu.be/VT0iyi8y8Q4?t=71">1:11</a> in the video above to see Claude Code CLI being controlled by voice.
+  Enable voice control in OSX with: <strong>System Settings → Accessibility → Voice Control</strong>.
+</div>
+
+<section class="mb-5">
+  <h2>Original Claude Voice Prompt</h2>
+  <blockquote class="blockquote bg-light p-3 rounded">
+    <p class="mb-0"><em>"Add ahoy and blazer to this project. Create some find_or_initialise queries to track referral by domain, visit by landing page, and new users by day. Only allow the logged in user to see a button to an access blazer if the currently logged in user matches an ID specified in config somewhere"</em></p>
+  </blockquote>
+</section>
+
+<section class="mb-5">
+  <h2>Git Commit Details</h2>
+  <p>View the complete implementation that Claude provided in this commit:</p>
+  <div class="text-center mb-3">
+    <a href="https://github.com/Stocklight/insidertrades.directory/commit/27b621a36b8a71b36001062d64d1e5dcd7c72fd3" target="_blank" class="btn btn-success btn-lg">
+      <i class="fab fa-github"></i> View Full Commit on GitHub
+    </a>
+  </div>
+</section>
+
+<section class="mb-5">
+  <h2>Blazer Analytics Queries</h2>
+  <p>Here are the three core analytics queries that we generated:</p>
+  
+  <pre><code># Blazer queries for analytics
+blazer_queries = [
+  {
+    name: "Referrals by Domain",
+    description: "Track website visits grouped by referring domain",
+    statement: &lt;&lt;~SQL
+      SELECT 
+        referring_domain,
+        COUNT(*) as visits,
+        COUNT(DISTINCT visitor_token) as unique_visitors,
+        DATE(started_at) as visit_date
+      FROM ahoy_visits 
+      WHERE referring_domain IS NOT NULL 
+        AND started_at >= date('now', '-30 days')
+      GROUP BY referring_domain, DATE(started_at)
+      ORDER BY visits DESC, visit_date DESC
+      LIMIT 50
+    SQL
+  },
+  {
+    name: "Visits by Landing Page",
+    description: "Track website visits grouped by landing page URL",
+    statement: &lt;&lt;~SQL
+      SELECT 
+        landing_page,
+        COUNT(*) as visits,
+        COUNT(DISTINCT visitor_token) as unique_visitors,
+        DATE(started_at) as visit_date
+      FROM ahoy_visits 
+      WHERE started_at >= date('now', '-30 days')
+      GROUP BY landing_page, DATE(started_at)
+      ORDER BY visits DESC, visit_date DESC
+      LIMIT 50
+    SQL
+  },
+  {
+    name: "New Users by Day",
+    description: "Track new user registrations grouped by day",
+    statement: &lt;&lt;~SQL
+      SELECT 
+        DATE(created_at) as registration_date,
+        COUNT(*) as new_users,
+        COUNT(CASE WHEN google_user_id IS NOT NULL THEN 1 END) as google_signups,
+        COUNT(CASE WHEN google_user_id IS NULL THEN 1 END) as email_signups
+      FROM users 
+      WHERE created_at >= date('now', '-30 days')
+      GROUP BY DATE(created_at)
+      ORDER BY registration_date DESC
+    SQL
+  }
+]
+
+blazer_queries.each do |query_attrs|
+  query = Blazer::Query.find_or_initialize_by(name: query_attrs[:name])
+  query.assign_attributes(query_attrs.merge(data_source: "main"))
+  
+  if query.save
+    puts "✓ Created/Updated Blazer query: #{query.name}"
+  else
+    puts "✗ Error creating query #{query_attrs[:name]}: #{query.errors.full_messages.join(', ')}"
+  end
+end</code></pre>
+</section>
+
+<section class="mb-5">
+  <h2>Key Features Delivered</h2>
+  
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">📈 Analytics Tracking</h5>
+          <p class="card-text">Automatic visit tracking on all pages with referrer, landing page, and user agent data.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">📊 Business Intelligence</h5>
+          <p class="card-text">Pre-built queries for traffic analysis, user behavior, and registration patterns.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">🔒 Secure Access</h5>
+          <p class="card-text">Admin-only dashboard access with configurable user ID authorization.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">⚙️ SQLite Integration</h5>
+          <p class="card-text">Properly configured for SQLite with environment-specific database paths.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5">
+  <h2>Implementation Highlights</h2>
+  
+  <h3>🔧 Configuration</h3>
+  <ul>
+    <li><strong>Gems:</strong> Added <a href="https://github.com/ankane/ahoy" target="_blank">ahoy_matey</a> and <a href="https://github.com/ankane/blazer" target="_blank">blazer</a> to Gemfile</li>
+    <li><strong>Database:</strong> SQLite configuration with environment-specific paths</li>
+    <li><strong>Authentication:</strong> Admin user ID configuration in <code>config/initializers/admin_config.rb</code></li>
+    <li><strong>Routes:</strong> Mounted Blazer engine with proper authentication</li>
+  </ul>
+
+  <h3>🎯 Analytics Queries</h3>
+  <p>Three business-critical queries implemented:</p>
+  <ol>
+    <li><strong>Referrals by Domain</strong> - Track traffic sources and marketing effectiveness</li>
+    <li><strong>Visits by Landing Page</strong> - Monitor content performance and user behavior</li>
+    <li><strong>New Users by Day</strong> - Track growth patterns and signup methods</li>
+  </ol>
+
+  <h3>🔐 Security Features</h3>
+  <ul>
+    <li>Admin-only access to Blazer dashboard via user ID whitelist</li>
+    <li>Analytics navigation button visible only to authorized users</li>
+    <li>Builds on existing <a href="/built-with-rails/google-signin-with-rails-authentication-generator">Google Sign-In authentication system</a> - users must be authenticated first</li>
+    <li>Comprehensive test coverage for authentication scenarios</li>
+  </ul>
+</section>

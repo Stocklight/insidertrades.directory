@@ -44,7 +44,7 @@ posts_data = [
     title: "Ahoy & Blazer analytics integration",
     slug: "ahoy-blazer-analytics-claude-voice-cli",
     summary: "Adding user analytics and business intelligence to Rails apps with Ahoy and Blazer - implemented with Claude Code voice control",
-    read_time: "8 min read",
+    read_time: "8 min read + 5 min video",
     youtube_slug: "VT0iyi8y8Q4",
     published_date: Date.new(2025, 9, 30),
     status: "published"
