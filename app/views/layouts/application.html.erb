@@ -24,6 +24,7 @@
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <%= javascript_include_tag "https://unpkg.com/ahoy.js@0.4.2/dist/ahoy.js" %>
   </head>
 
   <body>
@@ -38,6 +39,11 @@
             <li class="nav-item">
               <%= link_to "Built with Rails", built_with_rails_path, class: "nav-link" %>
             </li>
+            <% if admin_user? %>
+              <li class="nav-item">
+                <%= link_to "Analytics", "/blazer", class: "nav-link text-warning" %>
+              </li>
+            <% end %>
             <li class="nav-item">
               <% if authenticated? %>
                 <%= button_to "Sign Out", session_path, method: :delete, 

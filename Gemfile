@@ -19,6 +19,10 @@ gem "jbuilder"
 
 gem "jwt" # for google signin
 
+# Analytics and dashboard
+gem "ahoy_matey"
+gem "blazer"
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 

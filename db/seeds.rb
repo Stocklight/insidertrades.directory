@@ -42,12 +42,12 @@ posts_data = [
   },
   {
     title: "Ahoy & Blazer analytics integration",
-    slug: "ahoy-blazer-analytics",
-    summary: "Adding user analytics and business intelligence to Rails apps with Ahoy and Blazer",
-    read_time: "6 min read",
-    youtube_slug: nil,
-    published_date: Date.new(2025, 12, 1),
-    status: "draft"
+    slug: "ahoy-blazer-analytics-claude-voice-cli",
+    summary: "Adding user analytics and business intelligence to Rails apps with Ahoy and Blazer - implemented with Claude Code voice control",
+    read_time: "8 min read",
+    youtube_slug: "VT0iyi8y8Q4",
+    published_date: Date.new(2025, 9, 30),
+    status: "published"
   }
 ]
 
@@ -61,6 +61,71 @@ posts_data.each do |post_attrs|
     puts "✓ Created/Updated: #{post.title}"
   else
     puts "✗ Error creating #{post_attrs[:title]}: #{post.errors.full_messages.join(', ')}"
+  end
+end
+
+# Blazer queries for analytics
+puts "Creating Blazer queries..."
+
+blazer_queries = [
+  {
+    name: "Referrals by Domain",
+    description: "Track website visits grouped by referring domain",
+    statement: <<~SQL
+      SELECT#{' '}
+        referring_domain,
+        COUNT(*) as visits,
+        COUNT(DISTINCT visitor_token) as unique_visitors,
+        DATE(started_at) as visit_date
+      FROM ahoy_visits#{' '}
+      WHERE referring_domain IS NOT NULL#{' '}
+        AND started_at >= date('now', '-30 days')
+      GROUP BY referring_domain, DATE(started_at)
+      ORDER BY visits DESC, visit_date DESC
+      LIMIT 50
+    SQL
+  },
+  {
+    name: "Visits by Landing Page",
+    description: "Track website visits grouped by landing page URL",
+    statement: <<~SQL
+      SELECT#{' '}
+        landing_page,
+        COUNT(*) as visits,
+        COUNT(DISTINCT visitor_token) as unique_visitors,
+        DATE(started_at) as visit_date
+      FROM ahoy_visits#{' '}
+      WHERE started_at >= date('now', '-30 days')
+      GROUP BY landing_page, DATE(started_at)
+      ORDER BY visits DESC, visit_date DESC
+      LIMIT 50
+    SQL
+  },
+  {
+    name: "New Users by Day",
+    description: "Track new user registrations grouped by day",
+    statement: <<~SQL
+      SELECT#{' '}
+        DATE(created_at) as registration_date,
+        COUNT(*) as new_users,
+        COUNT(CASE WHEN google_user_id IS NOT NULL THEN 1 END) as google_signups,
+        COUNT(CASE WHEN google_user_id IS NULL THEN 1 END) as email_signups
+      FROM users#{' '}
+      WHERE created_at >= date('now', '-30 days')
+      GROUP BY DATE(created_at)
+      ORDER BY registration_date DESC
+    SQL
+  }
+]
+
+blazer_queries.each do |query_attrs|
+  query = Blazer::Query.find_or_initialize_by(name: query_attrs[:name])
+  query.assign_attributes(query_attrs.merge(data_source: "main"))
+
+  if query.save
+    puts "✓ Created/Updated Blazer query: #{query.name}"
+  else
+    puts "✗ Error creating query #{query_attrs[:name]}: #{query.errors.full_messages.join(', ')}"
   end
 end
 

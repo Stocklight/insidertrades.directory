@@ -1,3 +1,5 @@
+require "blazer"
+
 Rails.application.routes.draw do
   resource :session do
     member do
@@ -12,6 +14,9 @@ Rails.application.routes.draw do
   post "verify", to: "sessions#verify_code"
   post "google-signin", to: "sessions#create_for_google", as: :google_signin
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+
+  # Analytics dashboard - protected route
+  mount Blazer::Engine, at: "blazer"
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
