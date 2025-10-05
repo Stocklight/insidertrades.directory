@@ -66,3 +66,13 @@ resource "cloudflare_dns_record" "sendgrid_dmarc_record" {
   ttl     = 1
   proxied = false
 }
+
+resource "cloudflare_dns_record" "google_site_verification_record" {
+  zone_id = cloudflare_zone.insidertrades_directory_zone.id
+  comment = "Google Site Verification for sitemaps"
+  name    = "insidertrades.directory" # ie. @
+  type    = "TXT"
+  content = "rE5OrGI4rdrBzO_JHg9JswYMPOQ0Dm48jZLGjz9Cb58"
+  ttl     = 1
+  proxied = false
+}
